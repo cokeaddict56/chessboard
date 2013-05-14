@@ -1,0 +1,371 @@
+<html>
+<head>
+	<title>Chessboard</title>
+</head>
+<script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.5.1.min.js"></script>
+
+<div id='header'>
+&#9813;
+</div>
+
+<div id='board'> </div>
+<script defer='defer'>
+
+var square_size = 100;
+var header_width = square_size * 0.25;
+var header_length = square_size;
+
+
+var stage = new Kinetic.Stage({
+	container: 'board',
+	width: (header_width*2) + (square_size*8),
+	height: (header_width*2) + (square_size*8),
+});
+
+var board_layer = new Kinetic.Layer();
+
+
+// create checkerboard	
+board_squares = new Array();
+var a = 0;
+for( var i=0; i<8; i++ ) {
+	for( var j=0; j<8; j++ ) {
+	
+		board_squares.push( new Kinetic.Rect({
+				x: header_width + (i*square_size),
+				y: header_width + (j*square_size),
+				width: square_size,
+				height: square_size,
+				fill: ((i + (j % 2)) % 2 == 1) ? '#A64500' : '#FFAD73' ,
+				stroke: 'gray',
+				strokeWidth: 1,
+				draggable: false
+			})
+		);
+
+		a++;
+
+	}
+}
+
+/*=====================================================================================
+
+create board
+
+
+
+======================================================================================== */
+
+// create row and column headers
+col_top_headers = new Array();
+//create top col headers
+for( var i=0; i<8; i++) {
+	col_top_headers.push( 
+		new Kinetic.Group({
+			x: header_width+i*header_length,
+			y: 0
+		})
+	);
+	var box = new Kinetic.Rect({
+				x: 0,
+				y: 0,
+				width: header_length,
+				height: header_width,
+				fill: (i % 2 == 0) ? '#A64500' : '#FFAD73' ,
+				stroke: 'gray',
+				strokeWidth: 1,
+				draggable: false
+	});
+	var text = new Kinetic.Text({
+		//x: header_width + (i * header_length) + (header_length/2),
+		x: header_length/2 ,
+		y: header_width/2 - 10,
+		text: String.fromCharCode(65+i),
+		fontSize: 20,
+		fill: 'black'
+	});
+	col_top_headers[i].add(box);
+	col_top_headers[i].add(text);
+	board_layer.add(col_top_headers[i]);
+}
+// create bottom col_headers
+col_bottom_headers = new Array();
+for( var i=0; i<8; i++) {
+	col_bottom_headers.push( 
+		new Kinetic.Group({
+			x: header_width+i*header_length,
+			y: header_width + (8*square_size) 
+		})
+	);
+	var box = new Kinetic.Rect({
+				//x: header_width + (i*square_size),
+				x: 0,
+				y: 0,
+				width: header_length,
+				height: header_width,
+				fill: (i % 2 == 1) ? '#A64500' : '#FFAD73' ,
+				stroke: 'gray',
+				strokeWidth: 1,
+				draggable: false
+	});
+	var text = new Kinetic.Text({
+		//x: header_width + (i * header_length) + (header_length/2),
+		x: header_length/2 ,
+		y: header_width/2 - 10,
+		text: String.fromCharCode(65+i),
+		fontSize: 20,
+		fill: 'black'
+	});
+	col_bottom_headers[i].add(box);
+	col_bottom_headers[i].add(text);
+	board_layer.add(col_bottom_headers[i]);
+}
+
+row_right = new Array();
+//create top col headers
+for( var i=0; i<8; i++) {
+	row_right.push( 
+		new Kinetic.Group({
+			y: header_width+i*header_length,
+			x: 0
+		})
+	);
+	var box = new Kinetic.Rect({
+				//x: header_width + (i*square_size),
+				x: 0,
+				y: 0,
+				height: header_length,
+				width: header_width,
+				fill: (i % 2 == 0) ? '#A64500' : '#FFAD73' ,
+				stroke: 'gray',
+				strokeWidth: 1,
+				draggable: false
+	});
+	var text = new Kinetic.Text({
+		//x: header_width + (i * header_length) + (header_length/2),
+		y: header_length/2 ,
+		x: header_width/2 - 5,
+		text: String.fromCharCode(56-i),
+		fontSize: 20,
+		fill: 'black'
+		
+	});
+	row_right[i].add(box);
+	row_right[i].add(text);
+	board_layer.add(row_right[i]);
+}
+row_left = new Array();
+//create top col headers
+for(var i=0; i<8; i++) {
+	row_left.push( 
+		new Kinetic.Group({
+			y: header_width+i*header_length,
+			x: header_width + 8*square_size
+		})
+	);
+	var box = new Kinetic.Rect({
+				//x: header_width + (i*square_size),
+				x: 0,
+				y: 0,
+				height: header_length,
+				width: header_width,
+				fill: (i % 2 == 1) ? '#A64500' : '#FFAD73' ,
+				stroke: 'gray',
+				strokeWidth: 1,
+				draggable: false
+	});
+	var text = new Kinetic.Text({
+		//x: header_width + (i * header_length) + (header_length/2),
+		y: header_length/2 ,
+		x: header_width/2 - 5,
+		text: String.fromCharCode(56-i),
+		fontSize: 20,
+		fill: 'black'
+	});
+	row_left[i].add(box);
+	row_left[i].add(text);
+	board_layer.add(row_left[i]);
+}
+
+/*=========================================================================================
+
+	Place pieces
+
+===========================================================================================*/
+
+
+//-----------------------------------------------------------------------------
+// black pieces
+var b_pawn = new Kinetic.Text({
+	text: '\u265F',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+ 
+var b_knight = new Kinetic.Text({
+	text: '\u265E',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+
+var b_bishop = new Kinetic.Text({
+	text: '\u265D',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+
+var b_rook = new Kinetic.Text({
+	text: '\u265C',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+
+var b_queen = new Kinetic.Text({
+	text: '\u265B',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+
+var b_king = new Kinetic.Text({
+	text: '\u265A',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+
+//--------------------------------------------------------------------------------------
+// white pieces
+
+var w_pawn = new Kinetic.Text({
+	text: '\u2659',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+ 
+var w_knight = new Kinetic.Text({
+	text: '\u2658',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+
+var w_bishop = new Kinetic.Text({
+	text: '\u2657',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+
+var w_rook = new Kinetic.Text({
+	text: '\u2656',
+	fontSize: 20,
+	fill: 'black',
+	draggable: true
+});
+
+var w_queen = new Kinetic.Text({
+	text: '\u2655',
+	fontSize: 80,
+	fill: 'black',
+	draggable: true
+});
+
+var w_king = new Kinetic.Text({
+	text: '\u2655',
+	fontSize: 80,
+	fill: 'black',
+	draggable: true
+});
+
+
+
+pieces_layer = new Kinetic.Layer();
+
+// create checkerboard	
+var pieces = new Array(8);
+for(var i=0; i< 8; i++) {
+	pieces[i] = new Array(8);
+}
+
+pieces[0][0] = w_rook.clone();
+pieces[1][0] = w_knight.clone();
+pieces[2][0] = w_bishop.clone();
+pieces[3][0] = w_rook.clone();
+pieces[4][0] = w_king.clone();
+pieces[5][0] = w_queen.clone();
+pieces[6][0] = w_bishop.clone();
+pieces[7][0] = w_knight.clone();
+
+pieces[0][1] = w_pawn.clone();
+pieces[1][1] = w_pawn.clone();
+pieces[2][1] = w_pawn.clone();
+pieces[3][1] = w_pawn.clone();
+pieces[4][1] = w_pawn.clone();
+pieces[5][1] = w_pawn.clone();
+pieces[6][1] = w_pawn.clone();
+pieces[7][1] = w_pawn.clone();
+
+pieces[0][8] = b_rook.clone();
+pieces[1][8] = b_knight.clone();
+pieces[2][8] = b_bishop.clone();
+pieces[3][8] = b_rook.clone();
+pieces[4][8] = b_king.clone();
+pieces[5][8] = b_queen.clone();
+pieces[6][8] = b_bishop.clone();
+pieces[7][8] = b_knight.clone();
+
+pieces[0][7] = b_pawn.clone();
+pieces[1][7] = b_pawn.clone();
+pieces[2][7] = b_pawn.clone();
+pieces[3][7] = b_pawn.clone();
+pieces[4][7] = b_pawn.clone();
+pieces[5][7] = b_pawn.clone();
+pieces[6][7] = b_pawn.clone();
+pieces[7][7] = b_pawn.clone();
+
+
+
+for(var i=0; i<8; i++ ) {
+	for(var j=0; j<8; j++) {
+		if( pieces[i][j] ) {
+			pieces_layer.add(pieces[i][j]);
+		}
+	}
+}
+for( i=0; i<board_squares.length; i++) {
+	board_layer.add(board_squares[i]);
+}
+
+for(var i=0; i<8; i++ ) {
+	for(var j=0; j<8; j++) {
+		if( pieces[i][j] ) {
+			pieces[i][j].setX( header_width + (j*square_size) + (square_size/2) );
+			pieces[i][j].setY( header_width + (i*square_size) + (square_size/2) );	
+			pieces[i][j].setFontSize( 100 );	
+			pieces[i][j].moveToTop();	
+		}
+	}
+}
+stage.add(pieces_layer);
+stage.add(board_layer);
+
+for(var i=0; i<8; i++ ) {
+	for(var j=0; j<8; j++) {
+		if( pieces[i][j] ) {
+			pieces[i][j].setX( header_width + (j*square_size) + (square_size/2) );
+			pieces[i][j].setY( header_width + (i*square_size) + (square_size/2) );	
+			pieces[i][j].setFontSize( 100 );	
+			pieces[i][j].moveToTop();	
+		}
+	}
+}
+pieces_layer.draw();
+
+</script>
+</html>
