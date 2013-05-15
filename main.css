@@ -1,0 +1,13 @@
+#board table {
+	border-collapse: collapse;
+	border-spacing: 0px;
+}
+td {
+	 background-color: rgb(255, 184, 0);
+	 height: 100px;
+	 width: 100px;
+	 border: 1px solid black;
+	 border-collapse: collapse;
+	 padding: 0px;
+
+}
